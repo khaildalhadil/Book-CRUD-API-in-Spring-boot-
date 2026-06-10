@@ -3,6 +3,9 @@ package com.khalid.books.controller;
 import com.khalid.books.DTO.BookRequest;
 import com.khalid.books.modle.Book;
 import com.khalid.books.utils.BookUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.apache.commons.lang3.BooleanUtils;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Tag(name="Book REST API Endpoints", description = "Operations related to books")
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
@@ -36,18 +40,27 @@ public class BookController {
         books.add(new Book(10, "Healthy Living", "Anna White", "Health", 5));
     }
 
+    @Operation(summary = "Get all Books", description = "Retrieve a list of all available books")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
-    public List<Book> getBooks() {
-        return books;
+    public List<Book> getBooks(
+            @Parameter(description = "(Optional) category to get books by Category ")
+            @RequestParam(required = false) String category) {
+
+        return category == null ? books: books.stream().filter(b -> b.getCategory().equalsIgnoreCase(category)).toList();
+
     }
 
+    @Operation(summary = "Get Book By Id", description = "Retrieve a Book by ID Param")
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/{id}")
-    public Book getBookById(@PathVariable @Min(1) int id) {
+    public Book getBookById(
+            @Parameter(description = "id to get one book")
+            @PathVariable @Min(1) int id) {
         return books.stream().filter(b -> b.getId() == id).findFirst().orElse(null);
     }
 
+    @Operation(summary = "Add Book", description = "Add New Book By Adding the data")
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public Book AddBook(@Valid @RequestBody BookRequest bookRequest) {
@@ -60,9 +73,12 @@ public class BookController {
         return book;
     }
 
+    @Operation(summary = "Update book ", description = "Update book by the data user provides")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void updateBook(@PathVariable @Min(1) int id, @Valid @RequestBody BookRequest bookReq) {
+    public void updateBook(
+            @Parameter(description = "id to get update book")
+            @PathVariable @Min(1) int id, @Valid @RequestBody BookRequest bookReq) {
         for(int i = 0; i < books.size(); i++) {
             if (books.get(i).getId() == id) {
                 books.set(i, BookUtils.convertBook(id, bookReq));
@@ -72,9 +88,12 @@ public class BookController {
 
     }
 
+    @Operation(summary = "Delete Book", description = "Delete book by id")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{id}")
-    public void deleteBook(@PathVariable @Min(1) int id) {
+    public void deleteBook(
+            @Parameter(description = "id to get delete book")
+            @PathVariable @Min(1) int id) {
         books.removeIf(book -> book.getId() == id);
 
     }
