@@ -1,28 +1,17 @@
-package com.khalid.books.modle;
+package com.khalid.books.DTO;
 
-public class Book {
+public class BookRequest {
 
-
-    private int id;
     private String title;
     private String author;
     private String category;
     private int rating;
 
-    public Book(int id, String title, String author, String category, int rating) {
-        this.id = id;
+    public BookRequest(String title, String author, String category, int rating) {
         this.title = title;
         this.author = author;
         this.category = category;
         this.rating = rating;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public String getTitle() {
