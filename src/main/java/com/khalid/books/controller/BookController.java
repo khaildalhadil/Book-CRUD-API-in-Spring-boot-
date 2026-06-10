@@ -2,6 +2,8 @@ package com.khalid.books.controller;
 
 import com.khalid.books.DTO.BookRequest;
 import com.khalid.books.modle.Book;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -37,12 +39,12 @@ public class BookController {
     }
 
     @GetMapping("/{id}")
-    public Book getBookById(@PathVariable int id) {
+    public Book getBookById(@PathVariable @Min(1) int id) {
         return books.stream().filter(b -> b.getId() == id).findFirst().orElse(null);
     }
 
     @PostMapping
-    public Book AddBook(@RequestBody BookRequest bookRequest) {
+    public Book AddBook(@Valid @RequestBody BookRequest bookRequest) {
 
         int id = books.isEmpty() ? 1: books.get(books.size() - 1).getId() + 1;
 
@@ -54,11 +56,10 @@ public class BookController {
 
 
     @PutMapping("/{id}")
-    public void updateBook(@PathVariable int id, @RequestBody BookRequest bookReq) {
+    public void updateBook(@PathVariable @Min(1) int id, @Valid @RequestBody BookRequest bookReq) {
         for(int i = 0; i < books.size(); i++) {
             if (books.get(i).getId() == id) {
-                Book bookToUpdate = convertBook(id, bookReq);
-                books.set(i, bookToUpdate);
+                books.set(i, convertBook(id, bookReq));
                 return ;
             }
         }
@@ -66,7 +67,7 @@ public class BookController {
     }
 
     @DeleteMapping("{id}")
-    public void deleteBook(@PathVariable int id) {
+    public void deleteBook(@PathVariable @Min(1) int id) {
         books.removeIf(book -> book.getId() == id);
 
     }
