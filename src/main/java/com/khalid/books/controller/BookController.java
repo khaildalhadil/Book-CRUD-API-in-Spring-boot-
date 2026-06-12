@@ -1,6 +1,8 @@
 package com.khalid.books.controller;
 
 import com.khalid.books.DTO.BookRequest;
+import com.khalid.books.exception.BookErrorResponse;
+import com.khalid.books.exception.BookNotFoundException;
 import com.khalid.books.modle.Book;
 import com.khalid.books.utils.BookUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +12,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -57,7 +60,11 @@ public class BookController {
     public Book getBookById(
             @Parameter(description = "id to get one book")
             @PathVariable @Min(1) int id) {
-        return books.stream().filter(b -> b.getId() == id).findFirst().orElse(null);
+
+        return books.stream()
+                .filter(b -> b.getId() == id)
+                .findFirst()
+                .orElseThrow(() -> new BookNotFoundException("Book Not Found :" + id));
     }
 
     @Operation(summary = "Add Book", description = "Add New Book By Adding the data")
@@ -76,15 +83,19 @@ public class BookController {
     @Operation(summary = "Update book ", description = "Update book by the data user provides")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PutMapping("/{id}")
-    public void updateBook(
+    public Book updateBook(
             @Parameter(description = "id to get update book")
             @PathVariable @Min(1) int id, @Valid @RequestBody BookRequest bookReq) {
+
         for(int i = 0; i < books.size(); i++) {
             if (books.get(i).getId() == id) {
-                books.set(i, BookUtils.convertBook(id, bookReq));
-                return ;
+                Book updatedBook = BookUtils.convertBook(id, bookReq);
+                books.set(i, updatedBook);
+                return updatedBook;
             }
         }
+
+        throw new BookNotFoundException("Book NOt Found: " + id);
 
     }
 
@@ -94,19 +105,12 @@ public class BookController {
     public void deleteBook(
             @Parameter(description = "id to get delete book")
             @PathVariable @Min(1) int id) {
+
+        getBookById(id);
         books.removeIf(book -> book.getId() == id);
 
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @GetMapping("/*")
-    public String notFound() {
-        return "Not FOund 404";
-    }
-
-
-
-
-
 }
+
 
